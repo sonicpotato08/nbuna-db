@@ -123,17 +123,17 @@ td,th{padding:.4rem .35rem}
 <div class="table-wrap">
 <table>
 <thead><tr>
-<th data-col="曲名">曲名 <span class="arrow">▼</span></th>
+<th data-col="曲名" class="sorted">曲名 <span class="arrow">▼</span></th>
 <th data-col="ボーカル">ボーカル <span class="arrow">▼</span></th>
 <th data-col="収録アルバム">収録アルバム <span class="arrow">▼</span></th>
-<th data-col="配信日" class="sorted">配信日 <span class="arrow">▼</span></th>
+<th data-col="配信日">配信日 <span class="arrow">▼</span></th>
 <th data-col="カテゴリ">カテゴリ <span class="arrow">▼</span></th>
 <th data-col="リンク">リンク</th>
 <th data-col="配信状況">配信状況 <span class="arrow">▼</span></th>
 <th data-col="データソース">ソース <span class="arrow">▼</span></th>
 <th data-col="備考">備考</th>
 </tr></thead>
-<tbody id="tbody"><tr><td colspan="9"><div class="loading"><span class="spinner"></span>データ読み込み中...</div></td></tr></tbody>
+<tbody id="tbody"><tr><td colspan="9"><div class="loading"><span class="spinner"></span>スプレッドシートからデータを読み込み中...</div></td></tr></tbody>
 </table>
 </div>
 <footer>
@@ -195,24 +195,18 @@ return obj;
 }
 
 const CAT_LABELS = {
-"n-buna_ボカロ":"ボカロ","n-buna_ボカロ_VocaDB新規発見":"VocaDB発見",
-"n-buna_配信シングル":"配信シングル","n-buna_楽曲提供":"楽曲提供",
-"n-buna_コンピ初出":"コンピ初出","n-buna_コンピ参加":"コンピ参加",
-"n-buna_アレンジ/リミックス":"アレンジ","n-buna_リミックス":"リミックス",
-"n-buna_コラボ参加":"コラボ","n-buna_ゲーム関連":"ゲーム",
-"n-buna_原曲クレジット":"原曲クレジット","n-buna_既存曲別版":"別版",
-"n-buna_他者曲参加(要確認)":"他者曲参加",
-"ヨルシカ":"ヨルシカ","ヨルシカ_配信シングル":"ヨルシカSingle","ヨルシカ_参加作品":"ヨルシカ参加"
+"オリジナル":"オリジナル","楽曲提供":"楽曲提供",
+"コラボ・参加":"コラボ・参加","アレンジ":"アレンジ","リミックス":"リミックス",
+"コンピ収録":"コンピ収録","カバー・引用":"カバー・引用",
+"ゲーム":"ゲーム","別バージョン":"別バージョン",
+"ヨルシカ":"ヨルシカ"
 };
 const CAT_CSS = {
-"n-buna_ボカロ":"cat-nbuna-vocaloid","n-buna_ボカロ_VocaDB新規発見":"cat-nbuna-vocadb",
-"n-buna_配信シングル":"cat-nbuna-single","n-buna_楽曲提供":"cat-nbuna-provide",
-"n-buna_コンピ初出":"cat-nbuna-comp","n-buna_コンピ参加":"cat-nbuna-comp",
-"n-buna_アレンジ/リミックス":"cat-nbuna-arrange","n-buna_リミックス":"cat-nbuna-remix",
-"n-buna_コラボ参加":"cat-nbuna-collab","n-buna_ゲーム関連":"cat-nbuna-game",
-"n-buna_原曲クレジット":"cat-nbuna-ref","n-buna_既存曲別版":"cat-nbuna-other",
-"n-buna_他者曲参加(要確認)":"cat-nbuna-other",
-"ヨルシカ":"cat-yorushika","ヨルシカ_配信シングル":"cat-yorushika-single","ヨルシカ_参加作品":"cat-yorushika-feat"
+"オリジナル":"cat-nbuna-vocaloid","楽曲提供":"cat-nbuna-provide",
+"コラボ・参加":"cat-nbuna-collab","アレンジ":"cat-nbuna-arrange","リミックス":"cat-nbuna-remix",
+"コンピ収録":"cat-nbuna-comp","カバー・引用":"cat-nbuna-ref",
+"ゲーム":"cat-nbuna-game","別バージョン":"cat-nbuna-other",
+"ヨルシカ":"cat-yorushika"
 };
 
 let DATA = [], sortCol = "配信日", sortAsc = false, activeCats = new Set(), activeStatus = new Set(), query = "";
@@ -220,15 +214,15 @@ let DATA = [], sortCol = "配信日", sortAsc = false, activeCats = new Set(), a
 function getStatusClass(s) {
 if (s.startsWith("◯")) return "status-ok";
 if (s.startsWith("✕")) return "status-ng";
-if (s.startsWith("△")) return "status-check";
-return "status-na";
+if (s.startsWith("対")) return "status-na";
+return "status-check";
 }
 function getStatusLabel(s) {
 if (s.startsWith("◯")) return "◯ 配信あり";
 if (s.startsWith("✕")) return "✕ 購入限定";
-if (s.startsWith("△")) return "△ 要確認";
 if (s.startsWith("対")) return "対象外";
-return "不明";
+if (s === "—" || s === "-") return "— 未確認";
+return "— 未確認";
 }
 function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
@@ -244,8 +238,8 @@ if (activeStatus.size) {
 let match = false;
 if (activeStatus.has("◯") && sp === "◯") match = true;
 if (activeStatus.has("✕") && sp === "✕") match = true;
-if (activeStatus.has("△") && sp === "△") match = true;
-if (activeStatus.has("他") && (sp === "対" || !g(r,"status"))) match = true;
+if (activeStatus.has("—") && (sp === "—" || sp === "-" || !g(r,"status"))) match = true;
+if (activeStatus.has("対") && sp === "対") match = true;
 if (!match) return false;
 }
 if (q) {
@@ -256,7 +250,7 @@ return true;
 });
 filtered.sort((a, b) => {
 let va = g(a, sortCol) || "", vb = g(b, sortCol) || "";
-if (sortCol === "配信日" || sortCol === "date") { const ea = !va || va === "不明"; const eb = !vb || vb === "不明"; if (ea !== eb) return ea ? 1 : -1; if (ea && eb) return 0; }
+if (sortCol === "配信日" || sortCol === "date") { va = va || "9999"; vb = vb || "9999"; }
 const cmp = va.localeCompare(vb, "ja");
 return sortAsc ? cmp : -cmp;
 });
@@ -298,7 +292,7 @@ catDiv.appendChild(chip);
 });
 const stDiv = document.getElementById("statusFilters");
 stDiv.querySelectorAll(".chip").forEach(c => c.remove());
-[["◯","配信あり"],["✕","購入限定"],["△","要確認"],["他","対象外"]].forEach(([k,l]) => {
+[["◯","配信あり"],["✕","購入限定"],["—","未確認"],["対","対象外"]].forEach(([k,l]) => {
 const chip = document.createElement("span");
 chip.className = "chip";
 chip.textContent = l;
