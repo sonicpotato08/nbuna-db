@@ -256,7 +256,7 @@ return true;
 });
 filtered.sort((a, b) => {
 let va = g(a, sortCol) || "", vb = g(b, sortCol) || "";
-if (sortCol === "配信日" || sortCol === "date") { va = va || "9999"; vb = vb || "9999"; }
+if (sortCol === "配信日" || sortCol === "date") { const ea = !va || va === "不明"; const eb = !vb || vb === "不明"; if (ea !== eb) return ea ? 1 : -1; if (ea && eb) return 0; }
 const cmp = va.localeCompare(vb, "ja");
 return sortAsc ? cmp : -cmp;
 });
