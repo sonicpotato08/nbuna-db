@@ -209,7 +209,7 @@ const CAT_CSS = {
 "ヨルシカ":"cat-yorushika"
 };
 
-let DATA = [], sortCol = "配信日", sortAsc = false, activeCats = new Set(), activeStatus = new Set(), query = "";
+let DATA = [], sortCol = "配信日", sortAsc = true, activeCats = new Set(), activeStatus = new Set(), query = "";
 
 function getStatusClass(s) {
 if (s.startsWith("◯")) return "status-ok";
