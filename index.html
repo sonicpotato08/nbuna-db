@@ -86,6 +86,8 @@ td.src{font-size:.72rem;color:var(--text3)}
 .status-na{background:#303030;color:#9ca3af}
 footer{text-align:center;padding:2rem;color:var(--text3);font-size:.72rem;border-top:1px solid var(--border)}
 footer a{color:var(--accent2);text-decoration:none}
+.footer-author{margin-top:.3rem}
+.footer-author a{margin:0 .4rem}
 .loading{text-align:center;padding:3rem;color:var(--text3);font-size:1rem}
 .loading .spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent2);border-radius:50%;animation:spin .8s linear infinite;margin-right:.5rem;vertical-align:middle}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -139,7 +141,8 @@ td,th{padding:.4rem .35rem}
 <footer>
 <p>n-buna 全楽曲データベース — ファンメイド・非公式</p>
 <p style="margin-top:.3rem">データソース: Wikipedia, VocaDB, Discogs, VGMdb, ボカロDB, Pixiv百科事典, 各公式サイト</p>
-<p style="margin-top:.3rem">最終更新: スプレッドシートから自動取得 | <a href="https://github.com/sonicpotato08/nbuna-db" target="_blank">GitHub</a></p>
+<p style="margin-top:.3rem">最新データ: <span id="latestDate">—</span></p>
+<p class="footer-author">作者: たんそ<a href="https://x.com/carbon_nanoja" target="_blank" rel="noopener">@carbon_nanoja</a><a href="mailto:dotpixel8bit@gmail.com">dotpixel8bit@gmail.com</a><a href="https://github.com/sonicpotato08/nbuna-db" target="_blank" rel="noopener">GitHub</a></p>
 </footer>
 <script>
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vREi3SYsdCz1CUsX_1TKWt8ZBntVfpoq1aG6hIqPT5MHbrOlaixZODEqLOy-Qbs8TtcfmfUnRjyScUH/pub?gid=789613082&single=true&output=csv";
@@ -326,6 +329,12 @@ document.getElementById("availCount").textContent = DATA.filter(r => g(r,"status
 document.getElementById("limitedCount").textContent = DATA.filter(r => g(r,"status").startsWith("✕")).length;
 }
 
+function updateLatestDate() {
+const dates = DATA.map(r => g(r,"date")).filter(d => d && d !== "—" && /^\d{4}/.test(d)).sort();
+const latest = dates.length ? dates[dates.length - 1] : "—";
+document.getElementById("latestDate").textContent = latest;
+}
+
 async function loadData() {
 try {
 const res = await fetch(SHEET_CSV_URL);
@@ -336,6 +345,7 @@ if (DATA.length === 0) throw new Error("データが空です");
 initFilters();
 initSort();
 initStats();
+updateLatestDate();
 render();
 } catch (e) {
 document.getElementById("tbody").innerHTML = `<tr><td colspan="9"><div class="error">データの読み込みに失敗しました: ${e.message}<br>しばらく待ってからリロードしてください</div></td></tr>`;
